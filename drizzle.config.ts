@@ -16,7 +16,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export default {
-  schema: "@data/schema",
+  schema: "@database/schema",
   out: "@database/migration",
   dialect: process.env.DB_VENDOR,
   dbCredentials: {
