@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { ProjectController } from "@controller/project.controller";
 
-const router = Router();
+const projectRoutes = Router();
 
-router.post("/", ProjectController.create);
-router.get("/user/:userId", ProjectController.getAllByUser);
-router.get("/:id", ProjectController.getById);
-router.put("/:id", ProjectController.update);
-router.delete("/:id", ProjectController.delete);
+projectRoutes.post("/", ProjectController.create);
+projectRoutes.get("/user/:userId", ProjectController.getAllByUser);
+projectRoutes.get("/:id", ProjectController.getById);
+projectRoutes.put("/:id", ProjectController.update);
+projectRoutes.delete("/:id", ProjectController.delete);
 
-export default router;
+export {projectRoutes};

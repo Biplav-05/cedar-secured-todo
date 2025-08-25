@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { TaskController } from "@controller/task.controller";
 
-const router = Router();
+const taskRoutes = Router();
 
-router.post("/", TaskController.create);
-router.get("/project/:projectId", TaskController.getAllByProject);
-router.get("/:id", TaskController.getById);
-router.put("/:id", TaskController.update);
-router.delete("/:id", TaskController.delete);
+taskRoutes.post("/", TaskController.create);
+taskRoutes.get("/project/:projectId", TaskController.getAllByProject);
+taskRoutes.get("/:id", TaskController.getById);
+taskRoutes.put("/:id", TaskController.update);
+taskRoutes.delete("/:id", TaskController.delete);
 
-export default router;
+export {taskRoutes};

@@ -14,7 +14,6 @@
     "paths": {
       "@app/*": ["src/*"],
       "@db-pool": ["src/db.config"],
-      "@routes/*": ["src/routes/*"],
       "@service/*": ["src/service/*"], 
       "@controller/*": ["src/controller/*"],
       "@database/*": ["src/database/*"],

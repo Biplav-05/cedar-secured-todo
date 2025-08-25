@@ -10,16 +10,10 @@
 
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-
-import userRoutes from "@routes/user.route";
-import projectRoutes from "@routes/project.route";
-import taskRoutes from "@routes/task.route";
-
 import { requestLogger } from "@app/middleware/logger";
 import { logger } from "@utils/logs";
 import { successResponse } from "@utils/response";
-
-
+import { userRoutes, projectRoutes, taskRoutes } from "@app/routes"
 dotenv.config();
 
 const app = express();
