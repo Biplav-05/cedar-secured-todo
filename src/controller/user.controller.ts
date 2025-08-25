@@ -16,8 +16,6 @@ export class UserController {
     if (result.error) {
       return errorResponse(res, result.error, result.error.statusCode);
     }
-
-    // Successful response
     return successResponse(res, "User Created", 201);
   }
 
@@ -30,7 +28,6 @@ export class UserController {
     if (result.error) {
       return errorResponse(res, result.error, result.error.statusCode);
     }
-
     return successResponse(res, result.instance);
   }
 
@@ -44,7 +41,6 @@ export class UserController {
     if (result.error) {
       return errorResponse(res, result.error, result.error.statusCode);
     }
-
     return successResponse(res, result.instance);
   }
 
@@ -58,7 +54,6 @@ export class UserController {
     if (result.error) {
       return errorResponse(res, result.error, result.error.statusCode);
     }
-
     return successResponse(res, "User's data u[dated.");
   }
 
