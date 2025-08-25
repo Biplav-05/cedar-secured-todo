@@ -3,35 +3,44 @@
  *
  * - Loads environment variables using dotenv.
  * - Initializes and configures the Express application.
- * - Registers core routes for user, project, and task resources.
+ * - Registers middleware for logging.
+ * - Registers routes for user, project, and task resources.
  * - Starts the server on the specified port.
  */
 
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import userRoutes from "@routes/user.route.js";
-import projectRoutes from "@routes/project.route.js";
-import taskRoutes from "@routes/task.route.js";
+
+import userRoutes from "@routes/user.route";
+import projectRoutes from "@routes/project.route";
+import taskRoutes from "@routes/task.route";
+
+import { requestLogger } from "@app/middleware/logger";
+import { logger } from "@utils/logs";
+import { successResponse } from "@utils/response";
+
 
 dotenv.config();
 
 const app = express();
 const PORT: number = parseInt(process.env.APP_PORT as string, 10);
+
 app.use(express.json());
+app.use(requestLogger);
 
 if (isNaN(PORT)) {
-  throw new Error("APP_PORT environment variable is missing or invalid.");
+  logger.error("APP_PORT environment variable is missing or invalid.");
+  process.exit(1);
 }
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World from Express + TypeScript!");
+  successResponse(res, "Hello World from Express + TypeScript!");
 });
 
-// Route registrations
 app.use("/user", userRoutes);
 app.use("/project", projectRoutes);
 app.use("/task", taskRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });

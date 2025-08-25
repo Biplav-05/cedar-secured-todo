@@ -1,89 +1,78 @@
 import { Request, Response } from "express";
 import { UserService } from "@service/user.service";
+import { successResponse, errorResponse } from "@utils/response";
 
 /**
- * ---------------
- * Handles HTTP requests for user-related operations.
- * Delegates business logic to the UserService layer.
+ * Handles HTTP requests for user-related operations
  */
 export class UserController {
+
   /**
-   * ------
-   * Creates a new user using data from the request body.
-   * Responds with the created user object.
-   * HTTP Status: 201 on success, 500 on server error.
+   * Create a new user
    */
   static async create(req: Request, res: Response) {
-    try {
-      const user = await UserService.createUser(req.body);
-      res.status(201).json(user);
-    } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+    const result = await UserService.createUser(req.body);
+
+    if (result.error) {
+      return errorResponse(res, result.error, result.error.statusCode);
     }
+
+    // Successful response
+    return successResponse(res, "User Created", 201);
   }
 
   /**
-   * ------
-   * Fetches all users from the database.
-   * Responds with an array of users.
-   * HTTP Status: 200 on success, 500 on server error.
+   * Get all users
    */
-  static async getAll(_req: Request, res: Response) {
-    try {
-      const users = await UserService.getAllUsers();
-      res.json(users);
-    } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+  static async getAll(req: Request, res: Response) {
+    const result = await UserService.getAllUsers();
+
+    if (result.error) {
+      return errorResponse(res, result.error, result.error.statusCode);
     }
+
+    return successResponse(res, result.instance);
   }
 
   /**
-   * -------
-   * Fetches a single user by ID from the request parameters.
-   * Responds with the user object if found.
-   * HTTP Status: 200 on success, 404 if not found, 500 on server error.
+   * Get user by ID
    */
   static async getById(req: Request, res: Response) {
-    try {
-      const user = await UserService.getUserById(Number(req.params.id));
-      if (!user) return res.status(404).json({ error: "User not found" });
-      res.json(user);
-    } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+    const id = Number(req.params.id);
+    const result = await UserService.getUserById(id);
+
+    if (result.error) {
+      return errorResponse(res, result.error, result.error.statusCode);
     }
+
+    return successResponse(res, result.instance);
   }
 
   /**
-   * ------
-   * Updates an existing user identified by ID with request body data.
-   * Responds with the updated user object.
-   * HTTP Status: 200 on success, 404 if not found, 500 on server error.
+   * Update a user
    */
   static async update(req: Request, res: Response) {
-    try {
-      const user = await UserService.updateUser(Number(req.params.id), req.body);
-      if (!user) return res.status(404).json({ error: "User not found" });
-      res.json(user);
-    } catch (err) {
-      res.status(400).json({ error: (err as Error).message });
+    const id = Number(req.params.id);
+    const result = await UserService.updateUser(id, req.body);
+
+    if (result.error) {
+      return errorResponse(res, result.error, result.error.statusCode);
     }
+
+    return successResponse(res, "User's data u[dated.");
   }
 
   /**
-   * ------
-   * Deletes a user by ID from the request parameters.
-   * Responds with a success message if deleted.
-   * HTTP Status: 200 on success, 404 if not found, 500 on server error.
+   * Delete a user
    */
   static async delete(req: Request, res: Response) {
-    try {
-      const deleted = await UserService.deleteUser(Number(req.params.id));
+    const id = Number(req.params.id);
+    const result = await UserService.deleteUser(id);
 
-      if (!deleted) return res.status(404).json({ error: "User not found" });
-
-      res.json({ message: "User deleted" });
-    } catch (err) {
-      res.status(4).json({ error: (err as Error).message });
+    if (result.error) {
+      return errorResponse(res, result.error, result.error.statusCode);
     }
-}
+
+    return successResponse(res, { message: "User deleted successfully" });
+  }
 }

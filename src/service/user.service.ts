@@ -1,11 +1,13 @@
 import { db } from "@db-pool";
 import { user } from "@database/schema/user";
 import { eq } from "drizzle-orm";
-import { CustomErrorResponse } from "@app/utils/custom.error.response"
+import { CustomServiceError as CustomError, ServiceResult } from "@utils/service.response";
+
 /**
+ * UserService
  * -----------
- * Handles all business logic related to users.
- * Interacts directly with the database.
+ * Handles all business logic for users.
+ * Returns ServiceResult objects: { instance, error }.
  */
 export class UserService {
 
@@ -13,60 +15,58 @@ export class UserService {
    * createUser
    * ----------
    * Creates a new user in the database.
-   * Uses a transaction to ensure data consistency.
-   * @param data - User data (firstName, lastName, email, password)
-   * @returns Message indicating user creation
    */
   static async createUser(data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }) {
-    try {
-      const insertedId = await db.transaction(async (tx) => {
-        // Check if email already exists
-        const [existingUser] = await tx
-          .select()
-          .from(user)
-          .where(eq(user.email, data.email));
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}): Promise<ServiceResult<{ id: number; firstName: string; lastName: string; email: string }>> {
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [existingUser] = await tx
+        .select()
+        .from(user)
+        .where(eq(user.email, data.email));
 
-        if (existingUser) {
-          // throw new Error("User with same email already exists");
-          CustomErrorResponse(['User with same email already exists', 'need to change email'])
-        }
+      if (existingUser) {
+        return { error: new CustomError("User with same email already exists", 400) };
+      }
 
-        // Insert new user
-        return await tx
-          .insert(user)
-          .values({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            password: data.password,
-          })
-          .$returningId();
-      });
+      const [inserted] = await tx
+        .insert(user)
+        .values({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          password: data.password,
+        })
+        .$returningId();
 
-      return "New user created";
-    } catch (err) {
-      console.error("Error creating user:", err);
-      throw new Error((err as Error).message || "Failed to create user");
-    }
+      const newUserId = inserted.id;
+
+      const [newUser] = await tx.select().from(user).where(eq(user.id, newUserId));
+
+      return { instance: newUser };
+    });
+
+    return result ?? { error: new CustomError("Failed to create user") };
+  } catch (err: any) {
+    return { error: new CustomError("Failed to create user") };
   }
+}
 
   /**
    * getAllUsers
    * -----------
    * Retrieves all users from the database.
-   * @returns Array of user objects
    */
-  static async getAllUsers() {
+  static async getAllUsers(): Promise<ServiceResult<any[]>> {
     try {
-      return await db.select().from(user);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      throw new Error("Failed to fetch users");
+      const users = await db.select().from(user);
+      return { instance: users };
+    } catch (err: any) {
+      return { error: new CustomError("Failed to fetch users") };
     }
   }
 
@@ -74,16 +74,18 @@ export class UserService {
    * getUserById
    * -----------
    * Retrieves a single user by ID.
-   * @param id - User ID
-   * @returns User object or undefined if not found
    */
-  static async getUserById(id: number) {
+  static async getUserById(id: number): Promise<ServiceResult<any>> {
     try {
       const [userRow] = await db.select().from(user).where(eq(user.id, id));
-      return userRow;
-    } catch (err) {
-      console.error(`Error fetching user with ID ${id}:`, err);
-      throw new Error("Failed to fetch user");
+
+      if (!userRow) {
+        return { error: new CustomError("User not found", 404) };
+      }
+
+      return { instance: userRow };
+    } catch (err: any) {
+      return { error: new CustomError("Failed to fetch user") };
     }
   }
 
@@ -91,26 +93,24 @@ export class UserService {
    * updateUser
    * ----------
    * Updates an existing user by ID with new data.
-   * Uses a transaction to ensure data consistency.
-   * @param id - User ID
-   * @param data - Partial user data to update
-   * @returns Updated user object
    */
-  static async updateUser(id: number, data: Partial<{
-    firstName: string;
-    lastName: string;
-    password: string;
-  }>) {
+  static async updateUser(
+    id: number,
+    data: Partial<{ firstName: string; lastName: string; password: string }>
+  ): Promise<ServiceResult<any>> {
     try {
-      await db.transaction(async (tx) => {
+      const [updatedUser] = await db.transaction(async (tx) => {
         await tx.update(user).set(data).where(eq(user.id, id));
+        return tx.select().from(user).where(eq(user.id, id));
       });
 
-      const [updatedUser] = await db.select().from(user).where(eq(user.id, id));
-      return updatedUser;
-    } catch (err) {
-      console.error(`Error updating user with ID ${id}:`, err);
-      throw new Error("Failed to update user");
+      if (!updatedUser) {
+        return { error: new CustomError("User not found or not updated", 404) };
+      }
+
+      return { instance: updatedUser };
+    } catch (err: any) {
+      return { error: new CustomError("Failed to update user") };
     }
   }
 
@@ -118,20 +118,21 @@ export class UserService {
    * deleteUser
    * ----------
    * Deletes a user by ID.
-   * @param id - User ID
    */
-  static async deleteUser(id: number): Promise<boolean> {
+  static async deleteUser(id: number): Promise<ServiceResult<boolean>> {
     try {
       const result = await db.delete(user).where(eq(user.id, id));
 
-      // Safe way to get affected rows
       const affectedRows =
         typeof (result as any).affectedRows === "number" ? (result as any).affectedRows : 0;
 
-      return affectedRows > 0; // true if a user was deleted
-    } catch (err) {
-      console.error(`Error deleting user with ID ${id}:`, err);
-      throw new Error("Failed to delete user");
+      if (affectedRows === 0) {
+        return { error: new CustomError("User not found", 404) };
+      }
+
+      return { instance: true };
+    } catch (err: any) {
+      return { error: new CustomError("Failed to delete user") };
     }
   }
 }
