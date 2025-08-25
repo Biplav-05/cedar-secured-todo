@@ -2,12 +2,15 @@
   "name": "cedar-secured-todo",
   "version": "1.0.0",
   "description": "To-Do app with Express, TypeScript, Drizzle",
-  "main": "index.js",
-  "type": "commonjs",
+  "main": "entrypoint.js",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "dev": "nodemon --watch src --ext ts --exec tsx src/entrypoint.ts",
+    "build": "rm -rf dist && tsc && tsc-alias",
+    "install": "npm install tsconfig-paths --save-dev",
+    "start": "node dist/entrypoint.js",
+    "create-migration": "npx drizzle-kit generate",
+    "migrate": "npx drizzle-kit push",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,12 +28,18 @@
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
     "@types/node": "^24.3.0",
+    "drizzle-kit": "^0.31.4",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2"
   },
   "dependencies": {
     "dotenv": "^17.2.1",
-    "express": "^5.1.0"
+    "drizzle-orm": "^0.44.4",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.3"
   }
 }

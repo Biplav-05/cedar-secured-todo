@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1755851377910,
+      "tag": "0000_low_dakota_north",
+      "breakpoints": true
+    }
+  ]
+}
