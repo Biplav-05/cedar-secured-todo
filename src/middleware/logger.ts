@@ -7,8 +7,8 @@
  *
  * Example log:
  * ```
- * 2025-08-25T16:10:32.456Z [info]: ➡️ GET /user/123
- * 2025-08-25T16:10:32.470Z [info]: ⬅️ GET /user/123 200 - 14ms
+ * 2025-08-25T16:10:32.456Z [info]: => GET /user/123
+ * 2025-08-25T16:10:32.470Z [info]: => GET /user/123 200 - 14ms
  * ```
  */
 
@@ -25,7 +25,7 @@ import { logger } from "@utils/logs";
 export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
 
-  logger.info(`➡️  ${req.method} ${req.originalUrl}`);
+  logger.info(`=> ${req.method} ${req.originalUrl}`);
 
   res.on("finish", () => {
     const duration = Date.now() - start;

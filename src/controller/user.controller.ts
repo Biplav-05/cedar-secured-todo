@@ -72,7 +72,6 @@ export class UserController {
     if (result.error) {
       return errorResponse(res, result.error, result.error.statusCode);
     }
-
     return successResponse(res, { message: "User deleted successfully" });
   }
 }
